@@ -31,9 +31,21 @@ export const PROVIDER_MODELS: Record<Provider, ModelOption[]> = {
   ],
 };
 
+export const PROVIDER_LABELS: Record<Provider, string> = {
+  anthropic: "Anthropic",
+  openai: "OpenAI",
+  google: "Google",
+  xai: "xAI",
+};
+
+// ── Debate Mode ───────────────────────────────────────────────────────────────
+
+/** classic: For vs Against a proposition. freeforall: each AI argues for itself. */
+export type DebateMode = "classic" | "freeforall";
+
 // ── Debater Configuration ─────────────────────────────────────────────────────
 
-export type DebatePosition = "for" | "against" | "neutral";
+export type DebatePosition = "for" | "against" | "neutral" | "self";
 
 export interface Debater {
   id: string;
@@ -41,9 +53,7 @@ export interface Debater {
   provider: Provider;
   modelId: string;
   position: DebatePosition;
-  /** Optional custom system prompt; falls back to a generated one if empty */
   systemPrompt?: string;
-  /** UI color for this debater (tailwind color token e.g. "blue", "rose") */
   color: DebaterColor;
 }
 
@@ -58,17 +68,32 @@ export const DEBATER_COLORS: DebaterColor[] = [
   "orange",
 ];
 
+// Tailwind v4 requires full static class names — no dynamic interpolation
+export const COLOR_STYLES: Record<DebaterColor, { border: string; text: string; dot: string; badge: string; avatarBg: string }> = {
+  blue:    { border: "border-blue-500/40",    text: "text-blue-400",    dot: "bg-blue-500",    badge: "bg-blue-500/15 text-blue-300 border-blue-500/30",    avatarBg: "bg-blue-500/20" },
+  rose:    { border: "border-rose-500/40",    text: "text-rose-400",    dot: "bg-rose-500",    badge: "bg-rose-500/15 text-rose-300 border-rose-500/30",    avatarBg: "bg-rose-500/20" },
+  emerald: { border: "border-emerald-500/40", text: "text-emerald-400", dot: "bg-emerald-500", badge: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30", avatarBg: "bg-emerald-500/20" },
+  amber:   { border: "border-amber-500/40",   text: "text-amber-400",   dot: "bg-amber-500",   badge: "bg-amber-500/15 text-amber-300 border-amber-500/30",   avatarBg: "bg-amber-500/20" },
+  violet:  { border: "border-violet-500/40",  text: "text-violet-400",  dot: "bg-violet-500",  badge: "bg-violet-500/15 text-violet-300 border-violet-500/30",  avatarBg: "bg-violet-500/20" },
+  orange:  { border: "border-orange-500/40",  text: "text-orange-400",  dot: "bg-orange-500",  badge: "bg-orange-500/15 text-orange-300 border-orange-500/30",  avatarBg: "bg-orange-500/20" },
+};
+
 // ── Debate Configuration ──────────────────────────────────────────────────────
 
 export type DebateFormat = "oxford" | "freeform" | "socratic";
 
+export interface JudgeConfig {
+  provider: Provider;
+  modelId: string;
+}
+
 export interface DebateConfig {
   topic: string;
+  mode: DebateMode;
   format: DebateFormat;
-  rounds: number;
-  /** Approximate max words per response */
   maxWords: number;
   debaters: Debater[];
+  judge?: JudgeConfig;
 }
 
 // ── Debate Runtime State ──────────────────────────────────────────────────────
@@ -77,6 +102,7 @@ export type MessageStatus = "pending" | "streaming" | "done" | "error";
 
 export interface DebateMessage {
   id: string;
+  /** debaterId of a configured debater, or "moderator" for human interjections */
   debaterId: string;
   round: number;
   content: string;

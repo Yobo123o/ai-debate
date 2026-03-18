@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
+import { Nav } from "@/components/nav";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const geist = Geist({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-geist",
 });
 
 export const metadata: Metadata = {
@@ -17,15 +15,15 @@ export const metadata: Metadata = {
   description: "Watch AI models debate any topic",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}>
-        {children}
+    <html lang="en" className={`dark ${geist.variable}`}>
+      <body className="antialiased">
+        <TooltipProvider>
+          <Nav />
+          <main>{children}</main>
+        </TooltipProvider>
+        <Toaster richColors />
       </body>
     </html>
   );

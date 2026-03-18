@@ -21,7 +21,7 @@ export async function streamTurn(params: StreamTurnParams): Promise<ReadableStre
         switch (provider) {
           case "anthropic": {
             const apiKey = process.env.ANTHROPIC_API_KEY;
-            if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set");
+            if (!apiKey) { controller.error(new Error("ANTHROPIC_API_KEY is not set")); return; }
             const client = new Anthropic({ apiKey });
             const stream = client.messages.stream({
               model: modelId,
@@ -42,7 +42,7 @@ export async function streamTurn(params: StreamTurnParams): Promise<ReadableStre
 
           case "openai": {
             const apiKey = process.env.OPENAI_API_KEY;
-            if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
+            if (!apiKey) { controller.error(new Error("OPENAI_API_KEY is not set")); return; }
             const client = new OpenAI({ apiKey });
             const stream = await client.chat.completions.create({
               model: modelId,
@@ -62,7 +62,7 @@ export async function streamTurn(params: StreamTurnParams): Promise<ReadableStre
 
           case "xai": {
             const apiKey = process.env.XAI_API_KEY;
-            if (!apiKey) throw new Error("XAI_API_KEY is not set");
+            if (!apiKey) { controller.error(new Error("XAI_API_KEY is not set")); return; }
             const client = new OpenAI({ apiKey, baseURL: "https://api.x.ai/v1" });
             const stream = await client.chat.completions.create({
               model: modelId,
@@ -82,7 +82,7 @@ export async function streamTurn(params: StreamTurnParams): Promise<ReadableStre
 
           case "google": {
             const apiKey = process.env.GOOGLE_API_KEY;
-            if (!apiKey) throw new Error("GOOGLE_API_KEY is not set");
+            if (!apiKey) { controller.error(new Error("GOOGLE_API_KEY is not set")); return; }
             const genai = new GoogleGenerativeAI(apiKey);
             const model = genai.getGenerativeModel({
               model: modelId,
@@ -97,7 +97,8 @@ export async function streamTurn(params: StreamTurnParams): Promise<ReadableStre
           }
 
           default:
-            throw new Error(`Unknown provider: ${provider}`);
+            controller.error(new Error(`Unknown provider: ${provider}`));
+            return;
         }
 
         controller.close();

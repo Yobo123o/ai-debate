@@ -94,8 +94,9 @@ export default function DebatePage() {
     const controller = new AbortController();
     abortRef.current = controller;
 
+    let res: Response;
     try {
-      const res = await fetch("/api/debate/turn", {
+      res = await fetch("/api/debate/turn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
@@ -106,9 +107,20 @@ export default function DebatePage() {
           currentRound: round,
         }),
       });
+    } catch (err) {
+      const isAbort = (err as Error).name === "AbortError";
+      finalizeMessage(messageId, "error");
+      if (!isAbort) toast.error(`${debater.name} failed to respond`);
+      throw err;
+    }
 
-      if (!res.ok || !res.body) throw new Error("Stream failed");
+    if (!res.ok || !res.body) {
+      finalizeMessage(messageId, "error");
+      toast.error(`${debater.name} failed to respond`);
+      throw new Error("Stream failed");
+    }
 
+    try {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       while (true) {
@@ -143,7 +155,10 @@ export default function DebatePage() {
         }),
       });
 
-      if (!res.ok || !res.body) throw new Error();
+      if (!res.ok || !res.body) {
+        toast.error("Judge failed to respond");
+        return;
+      }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       while (true) {

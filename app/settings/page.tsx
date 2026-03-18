@@ -84,7 +84,10 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider, key: keys[provider] }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        toast.error("Failed to save key");
+        return;
+      }
       const name = PROVIDERS.find((p) => p.id === provider)!.name;
       setConfigured((c) => ({ ...c, [provider]: !!keys[provider] }));
       setKeys((k) => ({ ...k, [provider]: "" }));

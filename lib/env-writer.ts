@@ -11,8 +11,7 @@ function parseEnv(content: string): Record<string, string> {
     const idx = trimmed.indexOf("=");
     if (idx === -1) continue;
     const key = trimmed.slice(0, idx).trim();
-    const value = trimmed.slice(idx + 1).trim();
-    result[key] = value;
+    result[key] = trimmed.slice(idx + 1).trim();
   }
   return result;
 }
